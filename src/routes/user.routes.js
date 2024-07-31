@@ -1,5 +1,16 @@
 import { Router } from "express";
-import { loginUser, logoutUser, registerUser, RefreshAccessToken } from "../controllers/user.controller.js";
+import { registerUser,
+         loginUser,
+         logoutUser,
+         RefreshAccessToken,
+         changeCurrentPassword,
+         getCurrentUser,
+         updateAccountDetails,
+         updateUserAvatar,
+         updateUserCoverImage,
+         getUserChannelProfile,
+         getWatchHistory
+        } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -27,7 +38,7 @@ router.route("/logout").post(verifyJWT,  logoutUser)
 router.route("/refresh-token").post(RefreshAccessToken)
 
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar) 
-//Yaha patch isiliye use kiya kyuki if path use nahi karte toh sara update ho jaata
+//Yaha patch isiliye use kiya kyuki if patch use nahi karte toh sab kuch update ho jaata
 //but humko yaha par sirf avatar change karna hain.
 
 router.route("/change-password").post(verifyJWT, changeCurrentPassword)

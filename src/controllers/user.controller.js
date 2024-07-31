@@ -2,8 +2,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import mongoose from "mongoose";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import jwt from "jsonwebtoken "
+import jwt from "jsonwebtoken"
 
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -25,7 +26,7 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
 };
 
-
+ 
 
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, username, password } = req.body;
@@ -130,8 +131,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1    //removes fiels from documents
             }
         },
         {
@@ -206,7 +207,7 @@ try {
 })
 
 
-const changeCurrentPassowrd = asyncHandler(async (req, res) => {
+const changeCurrentPassword = asyncHandler(async (req, res) => {
 
     const{oldPassowrd, newPassowrd} = req.body
 
@@ -460,7 +461,7 @@ export {
     loginUser,
     logoutUser,
     RefreshAccessToken,
-    changeCurrentPassowrd,
+    changeCurrentPassword,
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
