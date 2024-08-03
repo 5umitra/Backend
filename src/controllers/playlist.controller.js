@@ -41,7 +41,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
 
 
     //  if (!createdPlaylist) {
-    //     throw new ApiError(500, "Something went wrong while registering the user");
+    //     throw new ApiError(500, "Something went wrong while ceating the playlist");
     // }
 
 
