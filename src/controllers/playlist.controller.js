@@ -28,7 +28,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
     );
 });
 
-    // if(!name && ! description){
+// if(!name && ! description){
     //     throw new ApiError(400, "Username and Description are required for creating playlist");
     // }
 
@@ -51,11 +51,32 @@ const createPlaylist = asyncHandler(async (req, res) => {
 
     //TODO: create playlist
 
-
-const getUserPlaylists = asyncHandler(async (req, res) => {
-    const {userId} = req.params
-    //TODO: get user playlists
-})
+    const getUserPlaylists = asyncHandler(async (req, res) => {
+        const { userId } = req.params;
+    
+        // Validate userId
+        if (!isValidObjectId(userId)) {
+            throw new ApiError(400, "Invalid user ID");
+        }
+    
+        // Fetch playlists from the database
+        const playlists = await Playlist.find({ user: userId });
+    
+        // Log the retrieved playlists for debugging
+        console.log("Playlists found:", playlists);
+    
+        // Check if playlists are found
+        if (!playlists.length) {
+            throw new ApiError(404, "No playlists found for this user");
+        }
+    
+        // Return the playlists
+        return res.status(200).json(
+            new ApiResponse(200, playlists, "Current User's playlists fetched successfully!")
+        );
+    });
+    
+    
 
 
 const getPlaylistById = asyncHandler(async (req, res) => {
