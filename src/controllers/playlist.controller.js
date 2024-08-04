@@ -6,12 +6,15 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 
 const createPlaylist = asyncHandler(async (req, res) => {
-    const {name, description} = req.body
+    const { name, description } = req.body;
     const userId = req.user.id; // Assuming the user ID is stored in the JWT and available in req.user
 
     if (!name || !description) {
         throw new ApiError(400, "Name and description are required for creating a playlist");
     }
+
+    // Log userId for debugging
+    console.log("Creating playlist for user ID:", userId);
 
     // Create a new playlist
     const playlist = new Playlist({
@@ -27,6 +30,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
         new ApiResponse(201, playlist, "Playlist created successfully")
     );
 });
+
 
 // if(!name && ! description){
     //     throw new ApiError(400, "Username and Description are required for creating playlist");
@@ -50,7 +54,6 @@ const createPlaylist = asyncHandler(async (req, res) => {
     // );
 
     //TODO: create playlist
-
     const getUserPlaylists = asyncHandler(async (req, res) => {
         const { userId } = req.params;
     
@@ -60,9 +63,10 @@ const createPlaylist = asyncHandler(async (req, res) => {
         }
     
         // Fetch playlists from the database
-        const playlists = await Playlist.find({ user: userId });
+        const playlists = await Playlist.find({ _id: userId });      //mini
     
         // Log the retrieved playlists for debugging
+        console.log("User ID:", userId);
         console.log("Playlists found:", playlists);
     
         // Check if playlists are found
@@ -75,7 +79,6 @@ const createPlaylist = asyncHandler(async (req, res) => {
             new ApiResponse(200, playlists, "Current User's playlists fetched successfully!")
         );
     });
-    
     
 
 

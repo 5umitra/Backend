@@ -231,10 +231,18 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+    const userId = req.user.id; // Assuming user ID is stored in req.user
+    const user = await User.findById(userId).select("-password -refreshToken");
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
     return res
     .status(200)
-    .json(200, req.user, "Current User fetched successsfully")
-})
+    .json(new ApiResponse(200, req.user, "Current User fetched successfully"));
+});
+
 
 
 const updateAccountDetails = asyncHandler (async (req, res) => {
