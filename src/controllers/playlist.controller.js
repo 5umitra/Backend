@@ -18,9 +18,10 @@ const createPlaylist = asyncHandler(async (req, res) => {
 
     // Create a new playlist
     const playlist = new Playlist({
-        name,
-        description,
-        user: userId,
+        name: name,
+        description: description || "",
+        owner: req.user._id,
+        // user: userId,
     });
 
     // Save the playlist to the database
@@ -54,7 +55,9 @@ const createPlaylist = asyncHandler(async (req, res) => {
     // );
 
     //TODO: create playlist
-    const getUserPlaylists = asyncHandler(async (req, res) => {
+  
+  
+const getUserPlaylists = asyncHandler(async (req, res) => {
         const { userId } = req.params;
     
         // Validate userId
@@ -63,29 +66,48 @@ const createPlaylist = asyncHandler(async (req, res) => {
         }
     
         // Fetch playlists from the database
-        const playlists = await Playlist.find({ _id: userId });      //mini
+        const playlist = await Playlist.find({ owner: userId });      //mini
     
         // Log the retrieved playlists for debugging
-        console.log("User ID:", userId);
-        console.log("Playlists found:", playlists);
+        //console.log("User ID:", userId);
+       // console.log("Playlists found:", playlists);
     
         // Check if playlists are found
-        if (!playlists.length) {
+        if (!playlist) {
             throw new ApiError(404, "No playlists found for this user");
         }
     
         // Return the playlists
         return res.status(200).json(
-            new ApiResponse(200, playlists, "Current User's playlists fetched successfully!")
+            new ApiResponse(200, playlist, "Current User's playlists fetched successfully!")
         );
     });
     
 
+    const getPlaylistById = asyncHandler(async (req, res) => {
+        const { playlistId } = req.params
+        //TODO: get playlist by id
+    
+        if (!isValidObjectId(playlistId)) {
+            throw new ApiError(401, "Not a valid playlist id")
+        }
+    
+        const playlist = await Playlist.findById(playlistId)
+    
+        if (!playlist) {
+            throw new ApiError(501, "Not playlist found")
+        }
+    
+        if (playlist.owner.toString() !== req.user?._id.toString()) {
+            throw new ApiError(401, "you cannot access the playlist as you are not the fucking owner")
+        }
+    
+        res.status(200).json(
+            new ApiResponse(200, playlist, "Playlist fetched successfully")
+        )
+    })
 
-const getPlaylistById = asyncHandler(async (req, res) => {
-    const {playlistId} = req.params
-    //TODO: get playlist by id
-})
+
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
     const {playlistId, videoId} = req.params
@@ -107,6 +129,9 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     const {name, description} = req.body
     //TODO: update playlist
 })
+
+
+
 
 export {
     createPlaylist,
