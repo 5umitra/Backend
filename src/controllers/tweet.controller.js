@@ -140,7 +140,8 @@ const deleteTweet = asyncHandler(async (req, res) => {
         throw new ApiError(401, " Something went wrong while deleting the tweet ")
     }
 
-    res.status(200)
+    return res
+    .status(200)
     .json(
         new ApiResponse(200, " tweet deleted succesfully! ")
     )
