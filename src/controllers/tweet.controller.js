@@ -7,10 +7,32 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 const createTweet = asyncHandler(async (req, res) => {
     //TODO: create tweet
+    const{ content } = req.body
+
+    if(!content){
+        throw new ApiError(401, " Content is required " )
+    }
+
+    const tweet = new Tweet.create({
+        content : content,
+        owner : Schema.Types.ObjectId(req.User?._id)
+    })
+
+    if(!tweet){
+        throw new ApiError(501, " something went wrong while creating tweet")
+    }
+
+
+    res.status(200)
+    .json(
+        new ApiResponse(200, tweet, "tweet created successfully")
+    )
+
 })
 
 const getUserTweets = asyncHandler(async (req, res) => {
     // TODO: get user tweets
+
 })
 
 const updateTweet = asyncHandler(async (req, res) => {
@@ -27,3 +49,7 @@ export {
     updateTweet,
     deleteTweet
 }
+
+
+
+
