@@ -54,9 +54,9 @@ const createPlaylist = asyncHandler(async (req, res) => {
     //     new ApiResponse(200, createdUser, "Playlist created Successfully")
     // );
 
-    //TODO: create playlist
-  
-  
+    //TODO: create playlist 
+
+
 const getUserPlaylists = asyncHandler(async (req, res) => {
         const { userId } = req.params;
     
@@ -81,10 +81,10 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         return res.status(200).json(
             new ApiResponse(200, playlist, "Current User's playlists fetched successfully!")
         );
-    });
+});
     
 
-    const getPlaylistById = asyncHandler(async (req, res) => {
+const getPlaylistById = asyncHandler(async (req, res) => {
         const { playlistId } = req.params
         //TODO: get playlist by id
     
@@ -105,17 +105,109 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         res.status(200).json(
             new ApiResponse(200, playlist, "Playlist fetched successfully")
         )
-    })
+})
 
 
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
     const {playlistId, videoId} = req.params
-})
+// 1) checking validation
+// 2) check if playlist is exist or not
+// 3) check ownership
+// 4) 
+
+if(!isValidObjectId(playlistId) && !isValidObjectId(videoId)){
+    throw new ApiError(401, "None of there Id's are valid")
+}
+
+const playlist = await Playlist.findById(playlistId)
+    
+if(!playlist){
+    throw new ApiError(404, " Playlist is not found ")
+}
+
+if(playlist.owner.tostring() !== playlist,req.user?._id.tostring() ){
+    throw new ApiError(404, "You are not a owner of this playlist so you cannot upload video")
+}
+
+const video = await Video.aggregate([
+    {
+        $match: {
+            _id: new mongoose.Types.ObjectId(videoId),
+
+        }
+    },
+    {
+        $lookup: {
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "owner",
+            pipeline: [
+                {
+                    $project: {
+                        _id: 1,
+                        username: 1,
+                        avatar: 1
+                    }
+                }
+            ]
+        }
+    },
+    {
+        $project: {
+            _id: 1,
+            videoFile: 1,
+            thumbnail: 1,
+            title: 1,
+            duration: 1,
+            views: 1,
+            createdAt: 1,
+            owner: 1
+        }
+    }
+]);
+
+if(!video || video.length() == 0){
+    throw new ApiError(501, "No such a video found")
+}
+playlist.videos.push(video[0]);
+
+    await playlist.save({ validateBeforeSave: false });
+
+    res.status(200).json(
+        new ApiResponse(200, playlist, "Video added successfully")
+    );
+});
+
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     const {playlistId, videoId} = req.params
     // TODO: remove video from playlist
+    if(!isValidObjectId(playlistId) && !isValidObjectId(videoId)){
+        throw new ApiError(401, "playlist and videos id's is not Valid" )
+    }
+
+    const playlist = await Playlist.findById(playlistId)
+    
+    if(!playlist.video.find((obj) => obj._id.tostring() !== videoId)){
+        throw new ApiError(401, "Video doesno existed in your playlist"  )
+    }
+    if(!playlist){
+        throw new ApiError(401, "playlist is not find")
+    }
+    
+    if (playlist.owner.toString() !== req.user?._id.toString()) {
+        throw new ApiError(401, "you cannot access the playlist as you are not the fucking owner")
+    }
+
+    playlist.videos = playlist.videos.filter((obj) => obj._id.toString() !== videoId)
+
+    await playlist.save({ validateBeforeSave: false });
+
+    res.status(200).json(
+        new ApiResponse(200, playlist, "Video removed successfully")
+    );
 
 })
 
