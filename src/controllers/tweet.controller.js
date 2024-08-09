@@ -81,6 +81,38 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
 const updateTweet = asyncHandler(async (req, res) => {
     //TODO: update tweet
+    const { tweetId } = req.params
+    const { content } = req.body
+    
+    if(content.trim() === ""){
+        throw new ApiError(401, " Content cannot be empty, you have to write something ")
+    }
+    
+    if(isValidObjectId(tweetId)){
+        throw new ApiError(401 , " Invalid User ")
+    }
+
+
+    const tweet = await Tweet.findById(tweetId)
+
+    if(!(tweet)){
+        throw new ApiError(501, " No such a tweet found ")
+    }
+
+
+    if(tweet?.owner.tostring() !== req.user?._id.tostring() ){
+        throw new ApiError(501, " You can not edit this tweet as you arre not the fucking owner!!")
+    }
+
+
+    tweet.content = tweet;
+
+    await tweet.save({validateBeforeSave : false})
+
+
+    res.status(200)
+    .json(200, tweet, "Your tweet updated successfully!!")
+
 })
 
 const deleteTweet = asyncHandler(async (req, res) => {
