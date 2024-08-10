@@ -116,6 +116,46 @@ const addComment = asyncHandler(async (req, res) => {
 
 const updateComment = asyncHandler(async (req, res) => {
     // TODO: update a comment
+    const { content } = req.body
+    const { commentId } = req.params
+
+    if(content.trim() === ""){
+        throw new ApiError(401, " Comment can not be empty ")
+    }
+
+    if(!isValidObjectId(commentId)){
+        throw new ApiError(400, " invalid comment Id " )
+    }
+
+    const comment = await Comment.findById(commentId)
+
+    if(!comment){
+        throw new ApiError(501, " no such a comments found ")
+    }
+
+    if(comment.owner.tostrinG() !== req.user?._id.tostring()){
+        throw new ApiError(401, " You can not change the commment cause you are not the fucking owner!! ")
+    }
+
+
+    const updatedComment = await Comment.findByIdAndUpdate(
+        commentId,
+        {
+            $set: {
+                content : content.trim()
+            }
+        },
+        {new : true}
+    )
+
+    if(!updateComment){
+        throw new ApiError(501, " Something went wrong while updating comment ")
+    }
+
+    return res
+    .status(200)
+    .json(200, updatedComment, " Comment updated successfully ")
+
 })
 
 const deleteComment = asyncHandler(async (req, res) => {
