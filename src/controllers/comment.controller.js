@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose, { isValidObjectId } from "mongoose"
 import {Comment} from "../models/comment.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
@@ -87,8 +87,31 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
 const addComment = asyncHandler(async (req, res) => {
     // TODO: add a comment to a video
+    const { content } = req.body
+    const { videoId } = req.params
 
-    
+
+        if(!isValidObjectId(videoId)){
+            throw new ApiError(401, " given user Id is invalid ")
+        }
+        if(content?.trim() === ""){
+            throw new ApiError(401, "Content must be present")
+        }
+
+        const comment = await Comment.create({
+            content : content,
+            video : new mongoose.Types.ObjectId(videoId),
+            user : new mongoose.Types.ObjectId(req.user?._id)
+        })
+
+        if(!comment){
+            throw new ApiError(400, "Something went wrong while creating comment")
+        }
+
+        return res
+        .status(200)
+        .json(200, comment , " Comments created successfully :)")
+
 })
 
 const updateComment = asyncHandler(async (req, res) => {
