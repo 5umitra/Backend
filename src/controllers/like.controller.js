@@ -57,7 +57,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
 
     const like = await Like.findOne({
-        comment : new mongoose.types.ObjectId(like._id),
+        comment : new mongoose.types.ObjectId(commentId),
         liked : user.req?._id
     })
 
@@ -93,31 +93,50 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 })
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const {tweetId} = req.params
     //TODO: toggle like on tweet
-}
-)
+    if(isValidObjectId(tweetId)){
+        throw new ApiError(401, " This TweetId is unvalid ")
+    }
+
+
+    const like = await Like.findOne({
+        tweet : new mongoose.types.ObjectId(tweetId),
+        liked : user.req?._id
+    })
+
+
+    let isLiked;
+    if(like){
+        deletedlike = await Like.findByIdAndDelete(like._id)
+
+        if(!deletedlike){
+            throw new ApiError(401, " Something went wrong while deleting the likes from the tweet ")
+        }
+
+        isLiked = true;
+    }
+
+    else{
+        const addedLike = await Like.create({
+            tweet : new mongoose.Types.ObjectId(tweetId),
+            likedby : req.user?._id
+        })
+
+        if(!addedLike){
+            throw new ApiError(401, " Something went wrong while liking on the tweet! ")
+        }
+
+
+    }
+
+    return res
+    .status(200)
+    .json(200, { isLiked }, "Tweet's liked successfulyy" )
+
+})
+
 
 const getLikedVideos = asyncHandler(async (req, res) => {
     //TODO: get all liked videos
