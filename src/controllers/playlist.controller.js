@@ -242,12 +242,12 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 })
 
 const updatePlaylist = asyncHandler(async (req, res) => {
-    const {playlistId} = req.params
+    const {playlistId} = req.params;
     const {name, description} = req.body
     //TODO: update playlist
 
     if(!isValidObjectId(playlistId) && !isValidObjectId(videoId)){
-        throw new ApiError(401, "playlist and videos id's is not Valid" )
+          throw new ApiError(401, "playlist and videos id's is not Valid" )
     }
 
     if(!name && !description){
