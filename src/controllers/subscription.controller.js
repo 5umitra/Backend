@@ -38,7 +38,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         )
 
         if(!newsubscriber){
-            throe new ApiError(501, "Something went wrong while subscribing channel")
+            throw new ApiError(501, "Something went wrong while subscribing channel")
         }
 
         flag = true
@@ -133,6 +133,42 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
     const { subscriberId } = req.params
+
+    
+    if (!isValidObjectId(subscriberId)) {
+        throw new ApiError(401, "Not a valid subscriber id")
+    }
+
+    const subscribedTo = await Subscription.aggregate([
+        {
+            $match: {
+                subscriber: new mongoose.Types.ObjectId(subscriberId)
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "channel",
+                foreignField: "_id",
+                as: "channels",
+                pipeline: [{
+                    $project: {
+                        _id: 1,
+                        "avatar.url": 1,
+                        username: 1,
+                    }
+                }]
+            }
+        },
+    ])
+
+    if (!subscribedTo) {
+        throw new ApiError(501, "No channels found")
+    }
+
+    res.status(200).json(
+        new ApiResponse(200, subscribedTo, "Subscribed channel fetched successfully")
+    )
 })
 
 export {
@@ -140,3 +176,9 @@ export {
     getUserChannelSubscribers,
     getSubscribedChannels
 }
+
+
+
+
+
+
