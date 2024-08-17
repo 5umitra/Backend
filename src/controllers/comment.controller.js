@@ -25,7 +25,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
 // skipCount = (2 - 1) * 10 = 10
 // The first 10 comments are skipped, and you get comments 11 to 20.
 
-    // Fetch comments with user and like details
+// Fetch comments with user and like details
     const comments = await Comment.aggregate([
         {
             $match: { video: new mongoose.Types.ObjectId(videoId) }
